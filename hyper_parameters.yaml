@@ -1,0 +1,68 @@
+_meta_: {}
+name: lymph_segmentation
+task: segmentation
+modality: PET
+extra_modalities: {image2: CT}
+
+
+dataroot: /UserData/Zach_Analysis/uw_lymphoma_pet_3d/final_training_testing_v6.json
+
+datalist: /UserData/Zach_Analysis/uw_lymphoma_pet_3d/data_for_making_interactive_figure_v3.json
+class_names: [lesion]
+
+crop_mode: ratio
+crop_ratios: [1, 3]
+
+num_samples: 1
+batch_size: 1
+resample: false
+
+resample_resolution: [3.65, 3.65, 3.65]
+resample_label: false
+
+
+
+num_epochs_per_validation: 1
+num_epochs_per_saving: 1
+num_workers: 20
+network: {_target_: DynUNet}
+sigmoid: false
+loss_fun: DiceCELoss
+loss: {_target_: $@loss_fun, include_background: false, squared_pred: false, smooth_nr: 1.0,
+  smooth_dr: 1.0, softmax: $not @sigmoid, sigmoid: $@sigmoid, to_onehot_y: $not @sigmoid}
+num_epochs: 250
+num_warmup_epochs: 5
+
+learning_rate: 0.00005 # was 0.0001
+min_learning_rate: 1.0e-6
+optimizer: {_target_: torch.optim.AdamW, lr: '@learning_rate', weight_decay: 1.0e-05}
+quick: false
+normalize_mode: range
+amp: true
+bundle_root: '/UserData/Zach_Analysis/git_multimodal/3DVision_Language_Segmentation_inference/COG_dynunet_baseline/COG_dynunet_0_baseline/dynunet_0_0/'
+ckpt_path: $@bundle_root + '/model'
+ckpt_save: True
+cache_rate: null
+determ: true
+finetune: {enabled: false, ckpt_name: $@bundle_root + '/model/intermiate_v4_f1_.6/model_final.pt'}
+validate: {enabled: false, ckpt_name: $@bundle_root + '/model/model.pt', output_path: $@bundle_root
+    + '/prediction_validation', save_mask: True, invert: true}
+infer: {enabled: True, ckpt_name: $@bundle_root + '/paper_predictions/f1_.76_dice_.55/model.pt', output_path: $@bundle_root
+    + '/paper_predictions/.1_data_prediction/' + @infer#data_list_key, data_list_key: testing}
+multigpu: false
+
+data_file_base_dir: /mnt/Bradshaw/UW_PET_Data/resampled_cropped_images_and_labels/images6/
+
+data_list_file_path: /UserData/Zach_Analysis/uw_lymphoma_pet_3d/data_for_making_interactive_figure_v3.json
+
+input_channels: 2
+output_classes: 2
+
+image_size: [192, 192, 352]
+roi_size: [192, 192, 352]
+
+warmup_epochs: 3
+class_index: null
+intensity_bounds: [1.2602129207467132, 11.101603884367073]
+spacing_lower: [2.0, 2.0, 2.0]
+spacing_upper: [2.0, 2.0, 2.0]
