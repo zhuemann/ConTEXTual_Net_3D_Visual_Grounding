@@ -1,3 +1,4 @@
 # ConTEXTual_Net_3D_Visual_Grounding
 
-This github is still under construction
+To start a training run update the hyper_parameters.yaml with the your pre-processed PET/CT data location
+then run python train.py
